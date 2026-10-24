@@ -1,0 +1,31 @@
+name: ci
+
+# Runs without Snowflake credentials, so it keeps passing after the trial ends.
+# It proves the project compiles, the semantic layer is valid, and SQL lints clean.
+# It does NOT run models or tests against data - that needs a warehouse.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DBT_PROFILES_DIR: .
+      SNOWFLAKE_ACCOUNT: ci-placeholder
+      SNOWFLAKE_USER: ci-placeholder
+      SNOWFLAKE_PRIVATE_KEY_PATH: /dev/null
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: dbt parse
+        run: dbt parse
+      - name: MetricFlow config validation (no warehouse)
+        run: mf validate-configs --skip-dw
+      - name: SQL lint
+        run: sqlfluff lint models tests

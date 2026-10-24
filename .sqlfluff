@@ -1,0 +1,14 @@
+[sqlfluff]
+dialect = snowflake
+templater = jinja
+# Keep the rule set small: catch real problems, don't fight style.
+rules = core
+# Layout rules off: they fight Jinja blocks and aligned columns. Lint for correctness, not style.
+exclude_rules = layout, ST06, AM04
+
+[sqlfluff:templater:jinja]
+apply_dbt_builtins = True
+load_macros_from_path = macros
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower

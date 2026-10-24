@@ -1,0 +1,14 @@
+version: 2
+
+seeds:
+  - name: customer_changes_load2
+    description: Simulated second delivery - changed attributes for customers 1-5.
+    config:
+      # Types must match the source exactly. If account_balance landed as FLOAT,
+      # every customer's hashdiff would change on load 2 (0.00 vs 0) and the
+      # satellite would fill with false "changes".
+      column_types:
+        customer_id: number(38,0)
+        market_segment: varchar(10)
+        phone: varchar(15)
+        account_balance: number(12,2)

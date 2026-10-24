@@ -1,0 +1,8 @@
+target/
+dbt_packages/
+logs/
+.venv/
+.env
+*.p8
+*.pem
+.user.yml

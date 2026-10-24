@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: hub_customer
+    description: Unique customer business keys. Fed by stg_customer and stg_orders.
+    columns:
+      - name: customer_hk
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [unique, not_null]
+
+  - name: hub_order
+    description: Unique order business keys.
+    columns:
+      - name: order_hk
+        data_tests: [unique, not_null]
+
+  - name: hub_part
+    description: Unique part business keys.
+    columns:
+      - name: part_hk
+        data_tests: [unique, not_null]
+
+  # WORKED EXAMPLE of link tests: every link key must resolve to a hub.
+  - name: link_order_customer
+    description: Relationship between an order and the customer who placed it.
+    columns:
+      - name: order_customer_hk
+        data_tests: [unique, not_null]
+      - name: order_hk
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('hub_order')
+                field: order_hk
+      - name: customer_hk
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('hub_customer')
+                field: customer_hk
+
+  # TODO: tests for link_order_line - same shape as link_order_customer above:
+  #   unique + not_null on order_line_hk; relationships from order_hk -> hub_order
+  #   and part_hk -> hub_part.
+
+  # TODO: tests for the four satellites.
+  #   A satellite has one row per key PER LOAD, so the hash key alone is not unique.
+  #   Test the combination instead. Clue - a model-level test with an expression:
+  #
+  #   - name: sat_customer
+  #     data_tests:
+  #       - unique:
+  #           column_name: "customer_hk || '|' || load_date"
+  #     columns:
+  #       - name: customer_hk
+  #         data_tests:
+  #           - relationships: ...   # every satellite row must belong to a hub key

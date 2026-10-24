@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: tpch
+    description: TPC-H benchmark data that ships with every Snowflake account (read-only share).
+    database: SNOWFLAKE_SAMPLE_DATA
+    schema: TPCH_SF1
+    tables:
+      - name: customer
+      - name: orders
+      - name: lineitem
+      - name: part

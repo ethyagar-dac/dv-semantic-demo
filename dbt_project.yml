@@ -1,0 +1,35 @@
+name: dv_semantic_demo
+version: "1.0.0"
+config-version: 2
+profile: dv_semantic_demo
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+vars:
+  # Which simulated load is running. 1 = initial load, 2 = applies seeds/customer_changes_load2.csv
+  load_batch: 1
+  # Load timestamps for each batch (what a real loader would stamp at ingestion time)
+  load_date_batch_1: "2026-01-01"
+  load_date_batch_2: "2026-02-01"
+  # Keep the data small and cheap: only orders placed in this window
+  order_date_start: "1997-01-01"
+  order_date_end: "1997-12-31"
+
+models:
+  dv_semantic_demo:
+    staging:
+      +materialized: view
+      +schema: staging
+    raw_vault:
+      +materialized: incremental
+      +schema: raw_vault
+    marts:
+      +materialized: table
+      +schema: marts
+
+seeds:
+  dv_semantic_demo:
+    +schema: staging

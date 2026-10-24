@@ -1,0 +1,5 @@
+# dbt Core + Snowflake adapter + MetricFlow CLI (mf). Pinned so they stay compatible.
+dbt-core==1.12.6
+dbt-snowflake==1.12.4
+dbt-metricflow[dbt-snowflake]==0.15.0
+sqlfluff>=3.0,<4

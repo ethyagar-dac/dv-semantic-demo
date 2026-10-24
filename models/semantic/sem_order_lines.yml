@@ -1,0 +1,60 @@
+version: 2
+
+# Semantic models tell MetricFlow what the tables MEAN:
+#   entities   = join keys (primary = this table's grain, foreign = points elsewhere)
+#   dimensions = things you group by
+#   measures   = aggregations metrics are built from
+# MetricFlow joins semantic models automatically through matching entity names.
+
+semantic_models:
+  - name: order_lines
+    description: Order line facts. Grain = one order line.
+    model: ref('fct_order_lines')
+    defaults:
+      agg_time_dimension: order_date
+
+    entities:
+      - name: order_line
+        type: primary
+        expr: order_line_hk
+      - name: customer
+        type: foreign
+        expr: customer_hk
+      # TODO: add a foreign entity `part` (expr part_hk) so metrics can be sliced by brand.
+
+    dimensions:
+      - name: order_date
+        type: time
+        type_params:
+          time_granularity: day
+      # TODO: add order_status as a categorical dimension.
+
+    measures:
+      - name: net_revenue
+        description: Sum of line revenue after discount.
+        agg: sum
+        expr: net_revenue
+      # TODO: two more measures, both agg: count_distinct
+      #   distinct_orders     expr: order_id
+      #   distinct_customers  expr: customer_hk
+      # Why count_distinct and not count? The fact grain is the LINE, not the order.
+
+  # WORKED EXAMPLE: a dimension-only semantic model. Its primary entity `customer`
+  # matches the foreign entity above - that's how `customer__market_segment` works.
+  - name: customers
+    description: Customer dimension, so metrics can be sliced by customer attributes.
+    model: ref('dim_customer')
+
+    entities:
+      - name: customer
+        type: primary
+        expr: customer_hk
+
+    dimensions:
+      - name: market_segment
+        type: categorical
+      - name: nation_id
+        type: categorical
+
+  # TODO: a `parts` semantic model on ref('dim_part'): primary entity `part`
+  # (expr part_hk), categorical dimensions brand and manufacturer.

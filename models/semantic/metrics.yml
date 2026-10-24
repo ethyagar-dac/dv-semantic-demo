@@ -1,0 +1,25 @@
+version: 2
+
+# Governed metrics: each is defined once, here, and every consumer gets the same answer.
+
+metrics:
+  - name: revenue
+    label: Revenue
+    description: Net revenue (extended price less discount) of order lines.
+    type: simple
+    type_params:
+      measure: net_revenue
+
+  # TODO: order_count       - type simple, measure distinct_orders
+  # TODO: active_customers  - type simple, measure distinct_customers
+  #
+  # TODO: average_order_value - type ratio:
+  #     type: ratio
+  #     type_params:
+  #       numerator: revenue
+  #       denominator: order_count
+  #
+  # The key talking point of the whole project: why is AOV a ratio METRIC computed
+  # at query time, not an avg_order_value column in the fact table?
+  # Test it: mf query --metrics average_order_value --group-by metric_time__month --explain
+  # and read the SQL. Then group by quarter. Both are correct. A stored average wouldn't be.

@@ -1,0 +1,14 @@
+# No secrets in this file. Values come from environment variables (see .env.example).
+dv_semantic_demo:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      role: DV_DEMO_ROLE
+      warehouse: DV_DEMO_WH
+      database: DV_DEMO
+      schema: dev
+      threads: 4

@@ -1,0 +1,21 @@
+-- Fact: one row per order line. Grain = order_id + line_number.
+-- Stores ADDITIVE facts only. No averages or ratios - those go in the semantic layer.
+--
+-- TODO: start from link_order_line (it defines the grain) and join:
+--   hub_order            -> order_id
+--   link_order_customer  -> customer_hk           (join on order_hk)
+--   sat_order_line       -> quantity, extended_price, discount   (latest row per order_line_hk)
+--   sat_order            -> order_date, order_status             (latest row per order_hk)
+--
+-- Output columns:
+--   order_line_hk, order_hk, customer_hk, part_hk, order_id, line_number,
+--   order_date, order_status, quantity,
+--   extended_price as gross_revenue, discount,
+--   extended_price * (1 - discount) as net_revenue
+--
+-- Clue 1: two CTEs, line_sat and order_sat, each using the qualify-latest pattern.
+-- Clue 2: join fan-out is the classic bug. If any join can return >1 row per order
+--         line, revenue is overstated. The unique test on order_line_hk and the
+--         reconciliation test in tests/ will both catch it.
+
+select 1 as todo_remove_me
