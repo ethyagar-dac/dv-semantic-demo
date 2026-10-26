@@ -14,8 +14,16 @@ with source as (
 
 )
 
--- TODO: final select with part_hk, part_hashdiff (6 descriptive columns),
--- the 7 business columns, load_date, record_source ('TPCH.PART').
--- This is the simplest staging model. Do it first, right after the macro.
-
-select 1 as todo_remove_me from source limit 0
+select
+    {{ hash_key(['part_id']) }} as part_hk,
+    {{ hash_key(['part_name', 'manufacturer', 'brand', 'part_type', 'part_size', 'retail_price']) }} as part_hashdiff,
+    part_id,
+    part_name,
+    manufacturer,
+    brand,
+    part_type,
+    part_size,
+    retail_price,
+    {{ load_date() }} as load_date,
+    'TPCH.PART'       as record_source
+from source

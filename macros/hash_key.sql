@@ -1,32 +1,24 @@
+rw-r--r--@  1 elangothyagarajan  staff  29424 Oct 24 07:04 dv-semantic-demo.zip
 {#-
   hash_key(columns)
-  Builds a Data Vault hash key (or hashdiff) from a list of column names.
+  Builds a Data Vault hash key (or hashdiff) from one or more columns.
 
-  Called like:   {{ hash_key(['order_id', 'customer_id']) }}
-  Should render: md5(concat_ws('||', <col1 standardised>, <col2 standardised>))
+  Standardisation rules, applied identically everywhere so the same business key
+  always produces the same hash, regardless of source:
+    1. cast to varchar        - 42 and '42' hash the same
+    2. trim + upper           - ' abc' and 'ABC' hash the same
+    3. null -> '^^'           - a null is distinguishable from an empty string
+    4. join with '||'         - ('a','bc') and ('ab','c') don't collide
 
-  Standardise EACH column the same way, everywhere, so one business key always
-  produces one hash no matter which source it came from:
-    1. cast to varchar        - 42 and '42' must hash the same
-    2. trim, then upper       - ' abc' and 'ABC' must hash the same
-    3. empty string -> null, then null -> '^^'
-                              - a null must not silently disappear from the string
-    4. join with '||'         - ('a','bc') and ('ab','c') must NOT collide
-
-  TODO: write the macro body.
-
-  Clue 1: Jinja loop:  {% for col in columns %} ... {% endfor %}
-  Clue 2: One column, fully standardised:
-            coalesce(nullif(upper(trim(cast(<col> as varchar))), ''), '^^')
-  Clue 3: Put a comma between items but not after the last:
-            {%- if not loop.last %},{% endif %}
-  Clue 4: The {%- and -%} variants strip whitespace. Optional, but keeps compiled SQL tidy.
-
-  Check: `dbt compile -s stg_part` then open target/compiled/.../stg_part.sql.
-  You should see md5(concat_ws('||', coalesce(...), coalesce(...))).
-
-  Interview question you should be able to answer: why '^^' and not ''?
+  MD5 is used for readability in a demo. Production: SHA-256 (sha2).
 -#}
 {%- macro hash_key(columns) -%}
-    {#- TODO -#}
+md5(
+    concat_ws('||',
+    {%- for col in columns %}
+        coalesce(nullif(upper(trim(cast({{ col }} as varchar))), ''), '^^')
+        {%- if not loop.last %},{% endif %}
+    {%- endfor %}
+    )
+)
 {%- endmacro -%}

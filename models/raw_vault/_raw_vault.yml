@@ -21,7 +21,6 @@ models:
       - name: part_hk
         data_tests: [unique, not_null]
 
-  # WORKED EXAMPLE of link tests: every link key must resolve to a hub.
   - name: link_order_customer
     description: Relationship between an order and the customer who placed it.
     columns:
@@ -40,19 +39,51 @@ models:
                 to: ref('hub_customer')
                 field: customer_hk
 
-  # TODO: tests for link_order_line - same shape as link_order_customer above:
-  #   unique + not_null on order_line_hk; relationships from order_hk -> hub_order
-  #   and part_hk -> hub_part.
+  - name: link_order_line
+    description: An order line - relationship between an order and a part, with line_number as dependent child key.
+    columns:
+      - name: order_line_hk
+        data_tests: [unique, not_null]
+      - name: order_hk
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('hub_order')
+                field: order_hk
+      - name: part_hk
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('hub_part')
+                field: part_hk
 
-  # TODO: tests for the four satellites.
-  #   A satellite has one row per key PER LOAD, so the hash key alone is not unique.
-  #   Test the combination instead. Clue - a model-level test with an expression:
-  #
-  #   - name: sat_customer
-  #     data_tests:
-  #       - unique:
-  #           column_name: "customer_hk || '|' || load_date"
-  #     columns:
-  #       - name: customer_hk
-  #         data_tests:
-  #           - relationships: ...   # every satellite row must belong to a hub key
+  - name: sat_customer
+    description: Customer attributes with history. One row per customer per change.
+    data_tests:
+      - unique:
+          column_name: "customer_hk || '|' || load_date"
+    columns:
+      - name: customer_hk
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('hub_customer')
+                field: customer_hk
+
+  - name: sat_order
+    description: Order attributes with history.
+    data_tests:
+      - unique:
+          column_name: "order_hk || '|' || load_date"
+
+  - name: sat_part
+    description: Part attributes with history.
+    data_tests:
+      - unique:
+          column_name: "part_hk || '|' || load_date"
+
+  - name: sat_order_line
+    description: Order line attributes (quantity, price, discount) with history. A link satellite.
+    data_tests:
+      - unique:
+          column_name: "order_line_hk || '|' || load_date"

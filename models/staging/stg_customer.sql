@@ -1,9 +1,6 @@
 -- Staging: one row per customer, renamed + typed, with vault metadata.
 -- On load_batch 2, a few customers get changed attributes from the seed,
 -- simulating a second delivery from the source system.
---
--- The source + load-2 CTEs are done for you. Read them until you can explain
--- the if/else Jinja block: it is the whole "second load" simulation.
 
 with source as (
 
@@ -31,7 +28,6 @@ current_delivery as (
         s.address,
         s.nation_id,
         coalesce(c.phone, s.phone)                     as phone,
-        -- the cast matters: see seeds/_seeds.yml for why
         cast(coalesce(c.account_balance, s.account_balance) as number(12, 2)) as account_balance,
         coalesce(c.market_segment, s.market_segment)   as market_segment
     from source as s
@@ -44,17 +40,16 @@ current_delivery as (
 )
 {% endif %}
 
--- TODO: final select from current_delivery. Output columns, in order:
---   customer_hk         hash of the business key
---   customer_hashdiff   hash of ALL descriptive columns (everything except the key)
---   customer_id ... market_segment   (the 7 columns above)
---   load_date           which load this row belongs to
---   record_source       a literal naming the source table, e.g. 'TPCH.CUSTOMER'
---
--- Clue 1: {{ hash_key(['customer_id']) }} as customer_hk
--- Clue 2: the hashdiff takes six columns. If you leave one out, changes to
---         that column will never create a new satellite row.
--- Clue 3: there's a macro for load_date already: {{ load_date() }}
--- Done when: dbt build -s stg_customer passes (unique + not_null on customer_hk).
-
-select 1 as todo_remove_me from current_delivery limit 0
+select
+    {{ hash_key(['customer_id']) }} as customer_hk,
+    {{ hash_key(['customer_name', 'address', 'nation_id', 'phone', 'account_balance', 'market_segment']) }} as customer_hashdiff,
+    customer_id,
+    customer_name,
+    address,
+    nation_id,
+    phone,
+    account_balance,
+    market_segment,
+    {{ load_date() }} as load_date,
+    'TPCH.CUSTOMER'   as record_source
+from current_delivery

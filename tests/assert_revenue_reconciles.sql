@@ -1,14 +1,19 @@
--- Singular test: returns rows only when something is wrong.
--- Proves net revenue in the fact equals net revenue computed straight from source
--- for the same order window - nothing dropped or duplicated through the vault.
---
--- TODO:
---   CTE source_total: sum(l_extendedprice * (1 - l_discount)) from source lineitem
---                     joined to source orders, filtered to the order_date vars
---   CTE fact_total:   sum(net_revenue) from fct_order_lines
---   select both totals, cross join, where abs(difference) > 0.01
---
--- Clue: use {{ source('tpch', 'lineitem') }} - deliberately bypass your own models,
---       otherwise you're checking your work against itself.
+with source_total as (
+    select sum(l.l_extendedprice * (1 - l.l_discount)) as revenue
+    from {{ source('tpch', 'lineitem') }} as l
+    inner join {{ source('tpch', 'orders') }} as o
+        on l.l_orderkey = o.o_orderkey
+    where o.o_orderdate between '{{ var("order_date_start") }}' and '{{ var("order_date_end") }}'
+),
 
-select 1 as todo_remove_me where false
+fact_total as (
+    select sum(net_revenue) as revenue
+    from {{ ref('fct_order_lines') }}
+)
+
+select
+    source_total.revenue as source_revenue,
+    fact_total.revenue   as fact_revenue
+from source_total
+cross join fact_total
+where abs(source_total.revenue - fact_total.revenue) > 0.01

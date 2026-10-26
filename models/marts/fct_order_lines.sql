@@ -1,21 +1,38 @@
 -- Fact: one row per order line. Grain = order_id + line_number.
--- Stores ADDITIVE facts only. No averages or ratios - those go in the semantic layer.
---
--- TODO: start from link_order_line (it defines the grain) and join:
---   hub_order            -> order_id
---   link_order_customer  -> customer_hk           (join on order_hk)
---   sat_order_line       -> quantity, extended_price, discount   (latest row per order_line_hk)
---   sat_order            -> order_date, order_status             (latest row per order_hk)
---
--- Output columns:
---   order_line_hk, order_hk, customer_hk, part_hk, order_id, line_number,
---   order_date, order_status, quantity,
---   extended_price as gross_revenue, discount,
---   extended_price * (1 - discount) as net_revenue
---
--- Clue 1: two CTEs, line_sat and order_sat, each using the qualify-latest pattern.
--- Clue 2: join fan-out is the classic bug. If any join can return >1 row per order
---         line, revenue is overstated. The unique test on order_line_hk and the
---         reconciliation test in tests/ will both catch it.
+-- Stores additive facts only (quantity, gross and net revenue).
+-- Averages and ratios are NOT stored here; they belong in the semantic layer.
 
-select 1 as todo_remove_me
+with line_sat as (
+    select *
+    from {{ ref('sat_order_line') }}
+    qualify row_number() over (partition by order_line_hk order by load_date desc) = 1
+),
+
+order_sat as (
+    select *
+    from {{ ref('sat_order') }}
+    qualify row_number() over (partition by order_hk order by load_date desc) = 1
+)
+
+select
+    lnk.order_line_hk,
+    lnk.order_hk,
+    loc.customer_hk,
+    lnk.part_hk,
+    hub_o.order_id,
+    lnk.line_number,
+    order_sat.order_date,
+    order_sat.order_status,
+    line_sat.quantity,
+    line_sat.extended_price                         as gross_revenue,
+    line_sat.discount,
+    line_sat.extended_price * (1 - line_sat.discount) as net_revenue
+from {{ ref('link_order_line') }} as lnk
+inner join {{ ref('hub_order') }} as hub_o
+    on lnk.order_hk = hub_o.order_hk
+inner join {{ ref('link_order_customer') }} as loc
+    on lnk.order_hk = loc.order_hk
+inner join line_sat
+    on lnk.order_line_hk = line_sat.order_line_hk
+inner join order_sat
+    on lnk.order_hk = order_sat.order_hk

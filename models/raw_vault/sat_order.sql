@@ -1,7 +1,3 @@
--- WORKED EXAMPLE. Read this before writing the other three satellites.
--- Trace it twice: once for the first run (is_incremental() false),
--- once for load 2 (true). What does `latest` contain on load 2?
-
 -- Satellite: descriptive attributes of order, with full history.
 -- Insert a row only when the hashdiff differs from the latest row we hold
 -- for that key. Unchanged records are skipped; changes become new versions.

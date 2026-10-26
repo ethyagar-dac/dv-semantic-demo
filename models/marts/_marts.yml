@@ -19,11 +19,26 @@ models:
       - name: part_hk
         data_tests: [unique, not_null]
 
-  # TODO: tests for fct_order_lines
-  #   - order_line_hk: unique + not_null  (this is your grain check)
-  #   - customer_hk: not_null + relationships to dim_customer
-  #   - part_hk: relationships to dim_part
-  #   - add a description for net_revenue (how it's calculated)
+  - name: fct_order_lines
+    description: One row per order line. Additive measures only.
+    columns:
+      - name: order_line_hk
+        data_tests: [unique, not_null]
+      - name: customer_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_hk
+      - name: part_hk
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_part')
+                field: part_hk
+      - name: net_revenue
+        description: extended_price * (1 - discount). The basis of the revenue metric.
 
   - name: metricflow_time_spine
     description: Daily date spine required by MetricFlow.

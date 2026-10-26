@@ -18,18 +18,23 @@ source as (
         l.l_shipdate      as ship_date
     from {{ source('tpch', 'lineitem') }} as l
     inner join orders as o
-        on l.l_orderkey = o.order_id   -- only lines for orders in the date window
+        on l.l_orderkey = o.order_id
 
 )
 
--- TODO: final select with
---   order_line_hk        hash of (order_id, part_id, line_number)  -> link_order_line
---   order_hk             hash of order_id                          -> joins to hub_order
---   part_hk              hash of part_id                           -> joins to hub_part
---   order_line_hashdiff  hash of quantity, extended_price, discount, return_flag, ship_date
---   the 8 business columns, load_date, record_source ('TPCH.LINEITEM')
---
--- Think: why does line_number go INTO the link's hash key?
--- (Hint: can the same part appear twice in one order?)
-
-select 1 as todo_remove_me from source limit 0
+select
+    {{ hash_key(['order_id', 'part_id', 'line_number']) }} as order_line_hk,
+    {{ hash_key(['order_id']) }}                           as order_hk,
+    {{ hash_key(['part_id']) }}                            as part_hk,
+    {{ hash_key(['quantity', 'extended_price', 'discount', 'return_flag', 'ship_date']) }} as order_line_hashdiff,
+    order_id,
+    part_id,
+    line_number,
+    quantity,
+    extended_price,
+    discount,
+    return_flag,
+    ship_date,
+    {{ load_date() }} as load_date,
+    'TPCH.LINEITEM'   as record_source
+from source

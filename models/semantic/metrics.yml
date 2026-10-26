@@ -10,16 +10,24 @@ metrics:
     type_params:
       measure: net_revenue
 
-  # TODO: order_count       - type simple, measure distinct_orders
-  # TODO: active_customers  - type simple, measure distinct_customers
-  #
-  # TODO: average_order_value - type ratio:
-  #     type: ratio
-  #     type_params:
-  #       numerator: revenue
-  #       denominator: order_count
-  #
-  # The key talking point of the whole project: why is AOV a ratio METRIC computed
-  # at query time, not an avg_order_value column in the fact table?
-  # Test it: mf query --metrics average_order_value --group-by metric_time__month --explain
-  # and read the SQL. Then group by quarter. Both are correct. A stored average wouldn't be.
+  - name: order_count
+    label: Orders
+    description: Count of distinct orders.
+    type: simple
+    type_params:
+      measure: distinct_orders
+
+  - name: average_order_value
+    label: Average order value
+    description: Revenue divided by orders. A ratio, computed at query time so it re-aggregates correctly at any grain.
+    type: ratio
+    type_params:
+      numerator: revenue
+      denominator: order_count
+
+  - name: active_customers
+    label: Active customers
+    description: Distinct customers with at least one order in the period.
+    type: simple
+    type_params:
+      measure: distinct_customers
