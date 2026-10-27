@@ -1,6 +1,9 @@
+-- depends_on: {{ ref('customer_changes_load2') }}
+
 -- Staging: one row per customer, renamed + typed, with vault metadata.
 -- On load_batch 2, a few customers get changed attributes from the seed,
 -- simulating a second delivery from the source system.
+
 
 with source as (
 

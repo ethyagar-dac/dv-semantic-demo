@@ -1,4 +1,3 @@
-<!-- DRAFT README. Before publishing: rewrite "Design decisions" and "Trade-offs" in your own words, add screenshots, delete this comment. -->
 # Data Vault → Star Schema → Semantic Layer (dbt + Snowflake)
 
 A small, end-to-end demo of a layered analytics architecture: staging → **Data Vault 2.0** raw vault → **dimensional** marts → **MetricFlow** semantic layer with governed metrics.
@@ -149,4 +148,11 @@ dbt docs generate && dbt docs serve
 
 ## Screenshots
 
-_Add after running: `docs/img/lineage.png` (dbt docs lineage graph), `docs/img/sat_history.png` (verify query 1), `docs/img/mf_query.png` (a metric query result)._
+**Lineage (dbt docs)**
+![Lineage graph](docs/img/lineage.png)
+
+**Satellite history after load 2**
+![sat_customer history](docs/img/sat_history.png)
+
+**Metric query (MetricFlow)**
+![mf query output](docs/img/mf_query.png)
