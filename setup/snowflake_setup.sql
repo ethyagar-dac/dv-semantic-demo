@@ -31,7 +31,7 @@ create user if not exists dbt_svc
     type = service
     default_role = dv_demo_role
     default_warehouse = dv_demo_wh
-    rsa_public_key = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzSdHonJOm162/42dHauGQ9zzuf4jpj54nR1cVtl9XmiWxEL9tISwSxpjF558xptmch01xsrxcRRydmXtpo9NZrXP+Duf65aQDlbulgChUCga94/crJzltdGt09LZcwzF453CNVzBGjOuxvJRMdmf+Bbai/F1QLqmXzf+2Oq1aQdfdLPv5xKaIH42fk63kAkxRB7srB1vGm3gkbTJeKqoPUvkwOx9hduAuGeHKCbtZefa4sj926oOLwKXS988ssH3BIVrWSn9xFjoOMtvIGUinta+pLo3V4YLJ6pTNhWO56ixjCVXaccuv8JjWFEHqz4UTmTNOQ5LMRN25XUwxKKbawIDAQAB';
+    rsa_public_key = '<PASTE_PUBLIC_KEY_HERE>';
 grant role dv_demo_role to user dbt_svc;
 
 -- 5. Optional guardrail: cap spend on this warehouse
