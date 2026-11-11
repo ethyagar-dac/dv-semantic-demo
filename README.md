@@ -2,8 +2,8 @@
 
 A small, end-to-end demo of a layered analytics architecture: staging → **Data Vault 2.0** raw vault → **dimensional** marts → **MetricFlow** semantic layer with governed metrics.
 
-> **What this is:** a hands-on portfolio project I wrote myself to show I can work in code, not just design on a whiteboard.
-> **What this isn't:** production experience. It runs on public sample data, one source, two simulated loads. In my real roles I architected these patterns and engineering teams built and operated them. The "What production would add" section is the honest gap list.
+> **What this is:** a hands-on portfolio project I built to show I can work in code, not just design on a whiteboard. I designed the architecture and used an AI assistant to speed up the coding, and I can explain and change every line.
+> **What this isn't:** production experience. It runs on public sample data, one source, two simulated loads. In my real roles I architected these patterns and engineering teams built and operated them. The “What production would add” section is the honest gap list. 
 
 ## Architecture
 
